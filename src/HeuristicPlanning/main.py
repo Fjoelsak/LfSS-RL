@@ -16,7 +16,7 @@ while not done:
             #action = ai_agent.find_best_move(obs)
         else:
             #action = game.get_user_action()
-            action = ai_agent.find_best_move(obs)
+            action = ai_agent.find_best_move(obs,8)
 
         obs, done, info = game.step(action)
 
