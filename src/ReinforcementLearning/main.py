@@ -3,6 +3,9 @@ import pygame
 from DPAgent import DPAgent
 from TDAgent import TDAgent
 
+"""
+The algorithms value iteration, q-learning and SARSA are implemented
+"""
 algorithm = 'Q-learning'
 
 env = gym.make('Taxi-v3')
