@@ -60,9 +60,11 @@ class TicTacToe:
         self.render()
 
         # check whether game is over
-        done = self.isWon() or self.isDraw()
+        isWon, player = TicTacToe.isWon(self.obs)
+        isDraw = TicTacToe.isDraw(self.obs)
+        done = isWon or isDraw
 
-        return self.obs, done, {'Winner': self.winner, 'isDraw': self.isDraw(), 'isWon': self.isWon()}
+        return self.obs, done, {'Winner': player if player is not None else None, 'isDraw': isDraw, 'isWon': isWon}
 
     def render(self):
         # Fenster mit Hintergrundfarbe füllen
@@ -153,15 +155,27 @@ class TicTacToe:
                     else:
                         continue
 
-    def isWon(self):
+    @staticmethod
+    def isWon(obs):
         for i in range(3):
             for j in range(2):
-                if (sum(self.obs[:, i, j]) == 3) or sum(self.obs[i, :, j]) == 3 or \
-                    sum(np.diagonal(self.obs[:, :, j])) == 3 or \
-                        sum(np.diagonal(self.obs[range(3), ::-1, j])) == 3:
-                    self.winner = self.agents[j]
-                    return True
-        return False
+                if (sum(obs[:, i, j]) == 3) or sum(obs[i, :, j]) == 3 or \
+                    sum(np.diagonal(obs[:, :, j])) == 3 or \
+                        sum(np.diagonal(obs[range(3), ::-1, j])) == 3:
+                    return True, j
+        return False, None
 
-    def isDraw(self):
-        return not (self.obs[:, :, 0] + self.obs[:, :, 1] == 0).any() and not self.isWon()
+    @staticmethod
+    def isDraw(obs):
+        return not (obs[:, :, 0] + obs[:, :, 1] == 0).any() and not TicTacToe.isWon(obs)[0]
+
+    @staticmethod
+    def get_reward_if_game_over(obs, player):
+        # checking game situation
+        isWon, winner = TicTacToe.isWon(obs)
+        if isWon:
+            return 1 if winner == player else -1
+        elif TicTacToe.isDraw(obs):
+            return 0
+        else:
+            return None

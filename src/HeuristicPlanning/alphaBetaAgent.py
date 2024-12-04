@@ -1,11 +1,11 @@
-from minimaxAgent import minimaxAgent
+from src.HeuristicPlanning.minimaxAgent import minimaxAgent
 import numpy as np
 import time
 
 class alphaBetaAgent(minimaxAgent):
 
-    def __init__(self, player):
-        super().__init__(player)
+    def __init__(self, env, player):
+        super().__init__(env, player)
 
     def alphabeta(self, obs, is_maximizing, current_player, alpha, beta, depth, max_depth):
         """
@@ -17,16 +17,13 @@ class alphaBetaAgent(minimaxAgent):
         :param beta: the best already guaranteed value for the minimizing player.
         :return: best value for the current board position
         """
-        # checking game situation
-        winner = self._evaluate_winner(obs)
-        if winner is not None:
-            return 1 if winner == self.player else -1
-        if self._is_draw(obs):
-            return 0
+        reward = self.env.get_reward_if_game_over(obs, self.player)
+        if reward is not None:
+            return reward
 
         # Check depth limit
         if depth >= max_depth:
-            return self._eval(obs, self.player)
+            return self._eval(obs)
 
         if is_maximizing:
             best_value = float('-inf')
@@ -66,6 +63,7 @@ class alphaBetaAgent(minimaxAgent):
     def find_best_move(self, obs, max_depth=10):
         """
         Find the best move for the agent using Alpha-Beta Pruning.
+        :param max_depth: max depth of search before evaluating.
         :param obs: The current board position (3x3x2-Array).
         :return: index of the best move (0-8).
         """

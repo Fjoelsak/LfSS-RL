@@ -1,12 +1,12 @@
 from TicTacToe import TicTacToe
-from minimaxAgent import minimaxAgent
-from alphaBetaAgent import alphaBetaAgent
+from src.HeuristicPlanning.alphaBetaAgent import alphaBetaAgent
+from src.HeuristicPlanning.minimaxAgent import minimaxAgent
 import time
 
-ai_agent = alphaBetaAgent(player = 1)
 
 game = TicTacToe()
 obs = game.reset()
+ai_agent = alphaBetaAgent(game, player = 1)
 
 done = False
 while not done:
@@ -16,13 +16,13 @@ while not done:
             #action = ai_agent.find_best_move(obs)
         else:
             #action = game.get_user_action()
-            action = ai_agent.find_best_move(obs,8)
+            action = ai_agent.find_best_move(obs, 3)
 
         obs, done, info = game.step(action)
 
         if done:
             if info['isWon']:
-                print(info['Winner'], "win")
+                print("Player", info['Winner'], "wins!")
             elif info['isDraw']:
                 print("This is a draw!")
             break

@@ -2,49 +2,19 @@ import time
 import numpy as np
 
 class minimaxAgent:
-    def __init__(self,player):
+    def __init__(self,env, player):
+        self.env = env
         self.player = player
 
-    def _is_draw(self, obs):
-        """
-        Checks if the game is a draw.
-        :param obs: The current game state.
-        :return: True if it's a draw, otherwise False.
-        """
-        winner = self._evaluate_winner(obs)
-        return not (obs[:, :, 0] + obs[:,:,1] == 0).any() and not((winner == 0) or (winner == 1))
-
-    def _evaluate_winner(self, obs) -> int:
-        """
-        Checks if there is a winner and returns the winner.
-        :param obs: The current game state (3x3x2 array).
-        :return: 0 (Player 0 wins), 1 (Player 1 wins), or None (no winner).
-        """
-        for player in range(2):
-            # checking rows
-            for row in range(3):
-                if all(obs[row, col, player] == 1 for col in range(3)):
-                    return player
-            # checking columns
-            for col in range(3):
-                if all(obs[row, col, player] == 1 for row in range(3)):
-                    return player
-            # checking diagonals
-            if all(obs[i, i, player] == 1 for i in range(3)) or \
-                    all(obs[i, 2 - i, player] == 1 for i in range(3)):
-                return player
-        # no winner
-        return None
-
-    def _eval(self,obs, player):
+    def _eval(self, obs):
         X1, X2, O1, O2 = 0, 0, 0, 0
 
         # Check rows and columns
         for axis in range(2):  # axis 0 for rows, 1 for columns
             for i in range(3):
                 # Get the line (row or column)
-                line = np.take(obs[:, :, player], i, axis=axis)
-                opponent_line = np.take(obs[:, :, 1 - player], i, axis=axis)
+                line = np.take(obs[:, :, self.player], i, axis=axis)
+                opponent_line = np.take(obs[:, :, 1 - self.player], i, axis=axis)
 
                 # Check if the line is not blocked by opponent (no opponent piece in the line)
                 if not np.any(opponent_line):
@@ -62,19 +32,19 @@ class minimaxAgent:
 
         # Check diagonals
         diagonals = [
-            np.array([obs[i, i, player] for i in range(3)]),  # Main diagonal
-            np.array([obs[i, 2 - i, player] for i in range(3)])  # Anti-diagonal
+            np.array([obs[i, i, self.player] for i in range(3)]),  # Main diagonal
+            np.array([obs[i, 2 - i, self.player] for i in range(3)])  # Anti-diagonal
         ]
 
         # For each diagonal, check if it's blocked by the opponent and count the pieces
         for diag in diagonals:
-            opponent_diag = [obs[i, i, 1 - player] for i in range(3)]  # Main diagonal opponent pieces
+            opponent_diag = [obs[i, i, 1 - self.player] for i in range(3)]  # Main diagonal opponent pieces
             if not np.any(opponent_diag) and np.sum(diag) == 1:
                 X1 += 1
             elif not np.any(opponent_diag) and np.sum(diag) == 2:
                 X2 += 1
 
-            opponent_diag = [obs[i, 2 - i, 1 - player] for i in range(3)]  # Anti-diagonal opponent pieces
+            opponent_diag = [obs[i, 2 - i, 1 - self.player] for i in range(3)]  # Anti-diagonal opponent pieces
             if not np.any(diag) and np.sum(opponent_diag) == 1:
                 O1 += 1
             elif not np.any(diag) and np.sum(opponent_diag) == 2:
@@ -90,16 +60,11 @@ class minimaxAgent:
         :param current_player: the player whose turn it is (0 oder 1).
         :return: best value for the current board position
         """
-        # checking game situation
-        winner = self._evaluate_winner(obs)
-        if winner is not None:
-            return 1 if winner == self.player else -1
-        if self._is_draw(obs):
-            return 0
+        self.env.get_reward_if_game_over(obs, self.player)
 
         # Check depth limit
         if depth >= max_depth:
-            return self._eval(obs, self.player)
+            return self._eval(obs)
 
         # maximizing or minimizing logic
         best_value = float('-inf') if is_maximizing else float('inf')
